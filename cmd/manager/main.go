@@ -7,8 +7,8 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/kube-incubator/redis-operator/redis-operator/pkg/apis"
-	"github.com/kube-incubator/redis-operator/redis-operator/pkg/controller"
+	"github.com/kube-incubator/redis-operator/pkg/apis"
+	"github.com/kube-incubator/redis-operator/pkg/controller"
 
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/leader"

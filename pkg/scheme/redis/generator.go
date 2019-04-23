@@ -17,7 +17,7 @@ import (
 	"github.com/kube-incubator/redis-operator/pkg/util"
 )
 
-func GenerateSentinelService(r *redisv1alpha1.Redis, labels map[string]string, ownerRefs []metav1.OwnerReference) *corev1.Service {
+func GenerateSentinelService(r *redisv1alpha1.Redis, labels map[string]string) *corev1.Service {
 	name := util.GetSentinelName(r)
 	namespace := r.Namespace
 
@@ -26,10 +26,9 @@ func GenerateSentinelService(r *redisv1alpha1.Redis, labels map[string]string, o
 
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            name,
-			Namespace:       namespace,
-			Labels:          labels,
-			OwnerReferences: ownerRefs,
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: labels,
@@ -45,7 +44,7 @@ func GenerateSentinelService(r *redisv1alpha1.Redis, labels map[string]string, o
 	}
 }
 
-func GenerateRedisService(r *redisv1alpha1.Redis, labels map[string]string, ownerRefs []metav1.OwnerReference) *corev1.Service {
+func GenerateRedisService(r *redisv1alpha1.Redis, labels map[string]string) *corev1.Service {
 	name := util.GetRedisName(r)
 	namespace := r.Namespace
 
@@ -53,10 +52,9 @@ func GenerateRedisService(r *redisv1alpha1.Redis, labels map[string]string, owne
 
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            name,
-			Namespace:       namespace,
-			Labels:          labels,
-			OwnerReferences: ownerRefs,
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
 			Annotations: map[string]string{
 				"prometheus.io/scrape": "true",
 				"prometheus.io/port":   "http",
@@ -78,7 +76,7 @@ func GenerateRedisService(r *redisv1alpha1.Redis, labels map[string]string, owne
 	}
 }
 
-func GenerateSentinelConfigMap(r *redisv1alpha1.Redis, labels map[string]string, ownerRefs []metav1.OwnerReference) *corev1.ConfigMap {
+func GenerateSentinelConfigMap(r *redisv1alpha1.Redis, labels map[string]string) *corev1.ConfigMap {
 	name := util.GetSentinelName(r)
 	namespace := r.Namespace
 
@@ -92,10 +90,9 @@ func GenerateSentinelConfigMap(r *redisv1alpha1.Redis, labels map[string]string,
 
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            name,
-			Namespace:       namespace,
-			Labels:          labels,
-			OwnerReferences: ownerRefs,
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
 		},
 		Data: map[string]string{
 			constants.SentinelConfigFileName: sentinelConfigFileContent,
@@ -103,7 +100,7 @@ func GenerateSentinelConfigMap(r *redisv1alpha1.Redis, labels map[string]string,
 	}
 }
 
-func GenerateRedisConfigMap(r *redisv1alpha1.Redis, labels map[string]string, ownerRefs []metav1.OwnerReference) *corev1.ConfigMap {
+func GenerateRedisConfigMap(r *redisv1alpha1.Redis, labels map[string]string) *corev1.ConfigMap {
 	name := util.GetRedisName(r)
 	namespace := r.Namespace
 
@@ -117,10 +114,9 @@ func GenerateRedisConfigMap(r *redisv1alpha1.Redis, labels map[string]string, ow
 
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            name,
-			Namespace:       namespace,
-			Labels:          labels,
-			OwnerReferences: ownerRefs,
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
 		},
 		Data: map[string]string{
 			constants.RedisConfigFileName: redisConfigFileContent,
@@ -128,7 +124,7 @@ func GenerateRedisConfigMap(r *redisv1alpha1.Redis, labels map[string]string, ow
 	}
 }
 
-func GenerateRedisShutdownConfigMap(r *redisv1alpha1.Redis, labels map[string]string, ownerRefs []metav1.OwnerReference) *corev1.ConfigMap {
+func GenerateRedisShutdownConfigMap(r *redisv1alpha1.Redis, labels map[string]string) *corev1.ConfigMap {
 	name := util.GetRedisShutdownConfigMapName(r)
 	namespace := r.Namespace
 
@@ -143,10 +139,9 @@ func GenerateRedisShutdownConfigMap(r *redisv1alpha1.Redis, labels map[string]st
 
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            name,
-			Namespace:       namespace,
-			Labels:          labels,
-			OwnerReferences: ownerRefs,
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
 		},
 		Data: map[string]string{
 			"shutdown.sh": shutdownContent,
@@ -154,7 +149,7 @@ func GenerateRedisShutdownConfigMap(r *redisv1alpha1.Redis, labels map[string]st
 	}
 }
 
-func GenerateRedisStatefulSet(r *redisv1alpha1.Redis, labels map[string]string, ownerRefs []metav1.OwnerReference) *appsv1beta2.StatefulSet {
+func GenerateRedisStatefulSet(r *redisv1alpha1.Redis, labels map[string]string) *appsv1beta2.StatefulSet {
 	name := util.GetRedisName(r)
 	namespace := r.Namespace
 
@@ -168,10 +163,9 @@ func GenerateRedisStatefulSet(r *redisv1alpha1.Redis, labels map[string]string, 
 
 	ss := &appsv1beta2.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            name,
-			Namespace:       namespace,
-			Labels:          labels,
-			OwnerReferences: ownerRefs,
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
 		},
 		Spec: appsv1beta2.StatefulSetSpec{
 			ServiceName: name,
@@ -197,7 +191,7 @@ func GenerateRedisStatefulSet(r *redisv1alpha1.Redis, labels map[string]string, 
 						{
 							Name:            "redis",
 							Image:           redisImage,
-							ImagePullPolicy: "Always",
+							ImagePullPolicy: "IfNotPresent",
 							Ports: []corev1.ContainerPort{
 								{
 									Name:          "redis",
@@ -250,10 +244,6 @@ func GenerateRedisStatefulSet(r *redisv1alpha1.Redis, labels map[string]string, 
 	}
 
 	if r.Spec.Redis.Storage.PersistentVolumeClaim != nil {
-		if !r.Spec.Redis.Storage.KeepAfterDeletion {
-			// Set an owner reference so the persistent volumes are deleted when the RF is
-			r.Spec.Redis.Storage.PersistentVolumeClaim.OwnerReferences = ownerRefs
-		}
 		ss.Spec.VolumeClaimTemplates = []corev1.PersistentVolumeClaim{
 			*r.Spec.Redis.Storage.PersistentVolumeClaim,
 		}
@@ -267,7 +257,7 @@ func GenerateRedisStatefulSet(r *redisv1alpha1.Redis, labels map[string]string, 
 	return ss
 }
 
-func GenerateSentinelDeployment(r *redisv1alpha1.Redis, labels map[string]string, ownerRefs []metav1.OwnerReference) *appsv1beta2.Deployment {
+func GenerateSentinelDeployment(r *redisv1alpha1.Redis, labels map[string]string) *appsv1beta2.Deployment {
 	name := util.GetSentinelName(r)
 	configMapName := util.GetSentinelName(r)
 	namespace := r.Namespace
@@ -280,10 +270,9 @@ func GenerateSentinelDeployment(r *redisv1alpha1.Redis, labels map[string]string
 
 	return &appsv1beta2.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            name,
-			Namespace:       namespace,
-			Labels:          labels,
-			OwnerReferences: ownerRefs,
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
 		},
 		Spec: appsv1beta2.DeploymentSpec{
 			Replicas: &spec.Sentinel.Replicas,
@@ -405,13 +394,12 @@ func GenerateSentinelDeployment(r *redisv1alpha1.Redis, labels map[string]string
 	}
 }
 
-func GeneratePodDisruptionBudget(name string, namespace string, labels map[string]string, ownerRefs []metav1.OwnerReference, minAvailable intstr.IntOrString) *policyv1beta1.PodDisruptionBudget {
+func GeneratePodDisruptionBudget(name string, namespace string, labels map[string]string, minAvailable intstr.IntOrString) *policyv1beta1.PodDisruptionBudget {
 	return &policyv1beta1.PodDisruptionBudget{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            name,
-			Namespace:       namespace,
-			Labels:          labels,
-			OwnerReferences: ownerRefs,
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
 		},
 		Spec: policyv1beta1.PodDisruptionBudgetSpec{
 			MinAvailable: &minAvailable,

@@ -3,5 +3,19 @@ kind: Redis
 metadata:
   name: example-redis
 spec:
-  # Add fields here
-  size: 3
+  sentinel:
+    replicas: 3
+    resources:
+      requests:
+        cpu: 100m
+      limits:
+        memory: 100Mi
+  redis:
+    replicas: 3
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+      limits:
+        cpu: 400m
+        memory: 500Mi

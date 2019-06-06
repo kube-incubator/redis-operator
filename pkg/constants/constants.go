@@ -1,7 +1,7 @@
 package constants
 
 const (
-	BaseName                             = "base"
+	BaseName                             = "bc"
 	AppLabel                             = "redis-operator"
 	RedisName                            = "redis"
 	SentinelName                         = "sentinel"

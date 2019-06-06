@@ -16,7 +16,7 @@ spec:
       containers:
         - name: redis-operator
           # Replace this with the built image name
-          image: shidaqiu/redis-operator:0.1
+          image: shidaqiu/redis-operator:1.0
           command:
           - redis-operator
           imagePullPolicy: IfNotPresent

@@ -4,13 +4,17 @@ import (
 	"context"
 
 	redisv1alpha1 "github.com/kube-incubator/redis-operator/pkg/apis/redis/v1alpha1"
+	"github.com/kube-incubator/redis-operator/pkg/controller/redis/internal/failover"
 	"github.com/kube-incubator/redis-operator/pkg/controller/redis/internal/sync"
+	k8s "github.com/kube-incubator/redis-operator/pkg/service/kubernetes"
+	"github.com/kube-incubator/redis-operator/pkg/service/redis"
 	"github.com/kube-incubator/redis-operator/pkg/staging/syncer"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -36,7 +40,8 @@ func Add(mgr manager.Manager) error {
 
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileRedis{client: mgr.GetClient(), scheme: mgr.GetScheme(), recorder: mgr.GetRecorder("redis-controller")}
+	failover := failover.NewRedisFailover(k8s.New(kubernetes.NewForConfigOrDie(mgr.GetConfig())), redis.New())
+	return &ReconcileRedis{client: mgr.GetClient(), scheme: mgr.GetScheme(), recorder: mgr.GetRecorder("redis-controller"), failover: failover}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
@@ -78,11 +83,10 @@ var _ reconcile.Reconciler = &ReconcileRedis{}
 
 // ReconcileRedis reconciles a Redis object
 type ReconcileRedis struct {
-	// This client, initialized using mgr.Client() above, is a split client
-	// that reads objects from the cache and writes to the apiserver
 	client   client.Client
 	scheme   *runtime.Scheme
 	recorder record.EventRecorder
+	failover *failover.RedisFailover
 }
 
 // Reconcile reads that state of the cluster for a Redis object and makes changes based on the state read
@@ -123,7 +127,15 @@ func (r *ReconcileRedis) Reconcile(request reconcile.Request) (reconcile.Result,
 		sync.NewRedisStatefulSetSyncer(redis, r.client, r.scheme),
 	}
 
-	return reconcile.Result{}, r.sync(syncers)
+	if err = r.sync(syncers); err != nil {
+		return reconcile.Result{}, err
+	}
+
+	if err = r.failover.CheckAndHeal(redis); err != nil {
+		return reconcile.Result{}, err
+	}
+
+	return reconcile.Result{}, nil
 }
 
 func (r *ReconcileRedis) sync(syncers []syncer.Interface) error {

@@ -82,10 +82,10 @@ func GenerateSentinelConfigMap(r *redisv1alpha1.Redis, labels map[string]string)
 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.SentinelRoleName, r.Name))
 	sentinelConfigFileContent := dedent.Dedent(`
-		sentinel monitor mymaster 127.0.0.1 6379 2
-		sentinel down-after-milliseconds mymaster 1000
-		sentinel failover-timeout mymaster 3000
-		sentinel parallel-syncs mymaster 2
+		sentinel monitor master 127.0.0.1 6379 2
+		sentinel down-after-milliseconds master 1000
+		sentinel failover-timeout master 3000
+		sentinel parallel-syncs master 2
 	`)
 
 	return &corev1.ConfigMap{
@@ -130,10 +130,10 @@ func GenerateRedisShutdownConfigMap(r *redisv1alpha1.Redis, labels map[string]st
 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.RedisRoleName, r.Name))
 	shutdownContent := dedent.Dedent(`
-		master=$(redis-cli -h ${RFS_REDIS_SERVICE_HOST} -p ${RFS_REDIS_SERVICE_PORT_SENTINEL} --csv SENTINEL get-master-addr-by-name mymaster | tr ',' ' ' | tr -d '\"' |cut -d' ' -f1)
+		master=$(redis-cli -h ${RFS_REDIS_SERVICE_HOST} -p ${RFS_REDIS_SERVICE_PORT_SENTINEL} --csv SENTINEL get-master-addr-by-name master | tr ',' ' ' | tr -d '\"' |cut -d' ' -f1)
 		redis-cli SAVE
 		if [[ $master ==  $(hostname -i) ]]; then
-  			redis-cli -h ${RFS_REDIS_SERVICE_HOST} -p ${RFS_REDIS_SERVICE_PORT_SENTINEL} SENTINEL failover mymaster
+  			redis-cli -h ${RFS_REDIS_SERVICE_HOST} -p ${RFS_REDIS_SERVICE_PORT_SENTINEL} SENTINEL failover master
 		fi
 	`)
 
@@ -536,6 +536,10 @@ func createPodAntiAffinity(hard bool, labels map[string]string) *corev1.PodAntiA
 			},
 		},
 	}
+}
+
+func GetQuorum(r *redisv1alpha1.Redis) int32 {
+	return getQuorum(r)
 }
 
 func getQuorum(r *redisv1alpha1.Redis) int32 {

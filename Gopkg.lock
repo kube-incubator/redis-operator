@@ -130,6 +130,30 @@
   version = "v0.19.0"
 
 [[projects]]
+  digest = "1:de44b2850368432628bec4f956a629e943af9ebe7449c1d80a3a5b6556869bb8"
+  name = "github.com/go-redis/redis"
+  packages = [
+    ".",
+    "internal",
+    "internal/consistenthash",
+    "internal/hashtag",
+    "internal/pool",
+    "internal/proto",
+    "internal/util",
+  ]
+  pruneopts = "NT"
+  revision = "75795aa4236dc7341eefac3bbe945e68c99ef9df"
+  version = "v6.15.3"
+
+[[projects]]
+  digest = "1:3c04690dd1d3fad9a36c492c32863fad91bcf822fd95d5c4cae97be1e9abc361"
+  name = "github.com/go-test/deep"
+  packages = ["."]
+  pruneopts = "NT"
+  revision = "6592d9cc0a499ad2d5f574fde80a2b5c5cc3b4f5"
+  version = "v1.0.1"
+
+[[projects]]
   digest = "1:9059915429f7f3a5f18cfa6b7cab9a28721d7ac6db4079a62044aa229eb7f2a8"
   name = "github.com/gobuffalo/envy"
   packages = ["."]
@@ -235,6 +259,14 @@
   pruneopts = "NT"
   revision = "7087cb70de9f7a8bc0a10c375cb0d2280a8edf9c"
   version = "v0.5.1"
+
+[[projects]]
+  branch = "master"
+  digest = "1:b0b1cae9ff30d8c219dc64e5f8dcfbb3f5f3f10f9e67dec737ce0bc04bf31a54"
+  name = "github.com/iancoleman/strcase"
+  packages = ["."]
+  pruneopts = "NT"
+  revision = "e506e3ef73653e84c592ba44aab577a46678f68c"
 
 [[projects]]
   digest = "1:aaa38889f11896ee3644d77e17dc7764cc47f5f3d3b488268df2af2b52541c5f"
@@ -909,6 +941,9 @@
   analyzer-version = 1
   input-imports = [
     "github.com/go-openapi/spec",
+    "github.com/go-redis/redis",
+    "github.com/go-test/deep",
+    "github.com/iancoleman/strcase",
     "github.com/lithammer/dedent",
     "github.com/operator-framework/operator-sdk/pkg/k8sutil",
     "github.com/operator-framework/operator-sdk/pkg/leader",
@@ -916,6 +951,7 @@
     "github.com/operator-framework/operator-sdk/pkg/metrics",
     "github.com/operator-framework/operator-sdk/version",
     "github.com/spf13/pflag",
+    "k8s.io/api/apps/v1",
     "k8s.io/api/apps/v1beta2",
     "k8s.io/api/core/v1",
     "k8s.io/api/policy/v1beta1",
@@ -926,7 +962,9 @@
     "k8s.io/apimachinery/pkg/runtime/schema",
     "k8s.io/apimachinery/pkg/types",
     "k8s.io/apimachinery/pkg/util/intstr",
+    "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
+    "k8s.io/client-go/tools/record",
     "k8s.io/code-generator/cmd/client-gen",
     "k8s.io/code-generator/cmd/conversion-gen",
     "k8s.io/code-generator/cmd/deepcopy-gen",

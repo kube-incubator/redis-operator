@@ -1,7 +1,7 @@
 apiVersion: redis.io/v1alpha1
 kind: Redis
 metadata:
-  name: example-redis
+  name: example
 spec:
   sentinel:
     replicas: 3

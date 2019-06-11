@@ -58,14 +58,16 @@ func (rfh *RedisFailoverHealer) SetOldestAsMaster(r *redisv1alpha1.Redis) error 
 
 	newMasterIP := ""
 	for _, pod := range ssp.Items {
-		if newMasterIP == "" {
-			newMasterIP = pod.Status.PodIP
-			if err := rfh.redisClient.MakeMaster(newMasterIP); err != nil {
-				return err
-			}
-		} else {
-			if err := rfh.redisClient.MakeSlaveOf(pod.Status.PodIP, newMasterIP); err != nil {
-				return err
+		if pod.Status.PodIP != "" {
+			if newMasterIP == "" {
+				newMasterIP = pod.Status.PodIP
+				if err := rfh.redisClient.MakeMaster(newMasterIP); err != nil {
+					return err
+				}
+			} else {
+				if err := rfh.redisClient.MakeSlaveOf(pod.Status.PodIP, newMasterIP); err != nil {
+					return err
+				}
 			}
 		}
 	}

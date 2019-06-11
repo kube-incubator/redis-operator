@@ -7,7 +7,11 @@ import (
 	redisv1alpha1 "github.com/kube-incubator/redis-operator/pkg/apis/redis/v1alpha1"
 	k8s "github.com/kube-incubator/redis-operator/pkg/service/kubernetes"
 	"github.com/kube-incubator/redis-operator/pkg/service/redis"
+
+	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
+
+var log = logf.Log.WithName("controller_redis")
 
 const (
 	timeToPrepare = 2 * time.Minute
@@ -29,6 +33,7 @@ func NewRedisFailover(k8sService k8s.Services, redisClient redis.Client) *RedisF
 }
 
 func (r *RedisFailover) CheckAndHeal(rf *redisv1alpha1.Redis) error {
+	fLogger := log.WithValues("Request.Namespace", rf.Namespace, "Request.Name", rf.Name)
 	nMasters, err := r.checker.GetNumberMasters(rf)
 	if err != nil {
 		return err
@@ -40,20 +45,23 @@ func (r *RedisFailover) CheckAndHeal(rf *redisv1alpha1.Redis) error {
 			return err
 		}
 		if len(redisesIP) == 1 {
+			fLogger.Info("Set redis master to " + redisesIP[0])
 			if err := r.healer.MakeMaster(redisesIP[0]); err != nil {
 				return err
 			}
 			break
 		}
-		minTime, err2 := r.checker.GetMinimumRedisPodTime(rf)
-		if err2 != nil {
-			return err2
+		minTime, err := r.checker.GetMinimumRedisPodTime(rf)
+		if err != nil {
+			return err
 		}
 		if minTime > timeToPrepare {
-			if err2 := r.healer.SetOldestAsMaster(rf); err2 != nil {
-				return err2
+			fLogger.Info("Waiting more than 2 minutes, try to set the oldest node as master")
+			if err := r.healer.SetOldestAsMaster(rf); err != nil {
+				return err
 			}
 		} else {
+			fLogger.Info("No master found, wait until failover")
 			return nil
 		}
 	case 1:
@@ -66,9 +74,11 @@ func (r *RedisFailover) CheckAndHeal(rf *redisv1alpha1.Redis) error {
 	if err != nil {
 		return err
 	}
-	if err2 := r.checker.CheckAllSlavesFromMaster(master, rf); err2 != nil {
-		if err3 := r.healer.SetMasterOnAll(master, rf); err3 != nil {
-			return err3
+
+	if err := r.checker.CheckAllSlavesFromMaster(master, rf); err != nil {
+		fLogger.Info("Set all slaves with the same master: " + master)
+		if err := r.healer.SetMasterOnAll(master, rf); err != nil {
+			return err
 		}
 	}
 
@@ -88,6 +98,7 @@ func (r *RedisFailover) CheckAndHeal(rf *redisv1alpha1.Redis) error {
 	}
 	for _, sip := range sentinels {
 		if err := r.checker.CheckSentinelMonitor(sip, master); err != nil {
+			fLogger.Info("Set sentinel to monitor " + master)
 			if err := r.healer.NewSentinelMonitor(sip, master, rf); err != nil {
 				return err
 			}

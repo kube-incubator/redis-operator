@@ -40,7 +40,7 @@ func NewRedisFailoverChecker(k8sService k8s.Services, redisClient redis.Client) 
 	}
 }
 
-// CheckAllSlavesFromMaster controlls that all slaves have the same master (the real one)
+// CheckAllSlavesFromMaster controls that all slaves have the same master (the real one)
 func (rfc *RedisFailoverChecker) CheckAllSlavesFromMaster(master string, r *redisv1alpha1.Redis) error {
 	rips, err := rfc.GetRedisesIPs(r)
 	if err != nil {
@@ -173,7 +173,8 @@ func (rfc *RedisFailoverChecker) GetMinimumRedisPodTime(r *redisv1alpha1.Redis) 
 	}
 	for _, redisNode := range rps.Items {
 		if redisNode.Status.StartTime == nil {
-			continue
+			minTime = 0
+			break
 		}
 		start := redisNode.Status.StartTime.Round(time.Second)
 		alive := time.Now().Sub(start)

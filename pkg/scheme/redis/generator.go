@@ -154,7 +154,6 @@ func GenerateRedisStatefulSet(r *redisv1alpha1.Redis, labels map[string]string) 
 	namespace := r.Namespace
 
 	spec := r.Spec
-	redisImage := getRedisImage(r)
 	redisCommand := getRedisCommand(r)
 	resources := getRedisResources(spec)
 	labels = util.MergeLabels(labels, util.GetLabels(constants.RedisRoleName, r.Name))
@@ -190,7 +189,7 @@ func GenerateRedisStatefulSet(r *redisv1alpha1.Redis, labels map[string]string) 
 					Containers: []corev1.Container{
 						{
 							Name:            "redis",
-							Image:           redisImage,
+							Image:           r.Spec.Redis.Image,
 							ImagePullPolicy: "IfNotPresent",
 							Ports: []corev1.ContainerPort{
 								{
@@ -269,7 +268,6 @@ func GenerateSentinelDeployment(r *redisv1alpha1.Redis, labels map[string]string
 	namespace := r.Namespace
 
 	spec := r.Spec
-	redisImage := getRedisImage(r)
 	sentinelCommand := getSentinelCommand(r)
 	resources := getSentinelResources(spec)
 	labels = util.MergeLabels(labels, util.GetLabels(constants.SentinelRoleName, r.Name))
@@ -299,7 +297,7 @@ func GenerateSentinelDeployment(r *redisv1alpha1.Redis, labels map[string]string
 					InitContainers: []corev1.Container{
 						{
 							Name:            "sentinel-config-copy",
-							Image:           redisImage,
+							Image:           r.Spec.Sentinel.Image,
 							ImagePullPolicy: "IfNotPresent",
 							VolumeMounts: []corev1.VolumeMount{
 								{
@@ -331,7 +329,7 @@ func GenerateSentinelDeployment(r *redisv1alpha1.Redis, labels map[string]string
 					Containers: []corev1.Container{
 						{
 							Name:            "sentinel",
-							Image:           redisImage,
+							Image:           r.Spec.Sentinel.Image,
 							ImagePullPolicy: "Always",
 							Ports: []corev1.ContainerPort{
 								{
@@ -550,10 +548,6 @@ func GetQuorum(r *redisv1alpha1.Redis) int32 {
 
 func getQuorum(r *redisv1alpha1.Redis) int32 {
 	return r.Spec.Sentinel.Replicas/2 + 1
-}
-
-func getRedisImage(r *redisv1alpha1.Redis) string {
-	return fmt.Sprintf("%s:%s", r.Spec.Redis.Image, r.Spec.Redis.Version)
 }
 
 func getRedisExporterImage(r *redisv1alpha1.Redis) string {

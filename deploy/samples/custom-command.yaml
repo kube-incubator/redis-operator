@@ -1,0 +1,20 @@
+apiVersion: redis.io/v1alpha1
+kind: Redis
+metadata:
+  name: example-custom-command
+spec:
+  redis:
+    replicas: 3
+    command:
+      - "redis-server"
+      - "/redis/redis.conf"
+      - "--protected-mode"
+      - "no"
+  sentinel:
+    replicas: 3
+    command:
+      - "redis-server"
+      - "/redis/sentinel.conf"
+      - "--sentinel"
+      - "--protected-mode"
+      - "no"

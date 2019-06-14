@@ -5,8 +5,8 @@ const (
 	defaultSentinelNumber       = 3
 	defaultExporterImage        = "oliver006/redis_exporter"
 	defaultExporterImageVersion = "v0.11.3"
-	defaultRedisImage           = "redis"
-	defaultRedisImageVersion    = "3.2-alpine"
+	defaultRedisImage           = "redis:3.2-alpine"
+	defaultSentinelImage        = "redis:3.2-alpine"
 )
 
 var (
@@ -28,8 +28,8 @@ func (r *Redis) SetDefaults() {
 		r.Spec.Redis.Image = defaultRedisImage
 	}
 
-	if len(r.Spec.Redis.Version) == 0 {
-		r.Spec.Redis.Version = defaultRedisImageVersion
+	if len(r.Spec.Sentinel.Image) == 0 {
+		r.Spec.Sentinel.Image = defaultSentinelImage
 	}
 
 	if len(r.Spec.Redis.ExporterImage) == 0 {

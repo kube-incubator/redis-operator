@@ -1,0 +1,11 @@
+apiVersion: redis.io/v1alpha1
+kind: Redis
+metadata:
+  name: example-custom-image
+spec:
+  redis:
+    replicas: 3
+    image: redis:4.0-alpine
+  sentinel:
+    replicas: 3
+    image: redis:4.0-alpine

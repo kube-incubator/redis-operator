@@ -37,22 +37,22 @@ type RedisSpec struct {
 
 // RedisSettings defines the specification of the redis cluster
 type RedisSettings struct {
+	Image                 string         `json:"image,omitempty"`
 	Replicas              int32          `json:"replicas,omitempty"`
 	Resources             RedisResources `json:"resources,omitempty"`
-	Exporter              bool           `json:"exporter,omitempty"`
-	ExporterImage         string         `json:"exporterImage,omitempty"`
-	ExporterVersion       string         `json:"exporterVersion,omitempty"`
-	DisableExporterProbes bool           `json:"disableExporterProbes,omitempty"`
-	Image                 string         `json:"image,omitempty"`
-	Version               string         `json:"version,omitempty"`
 	CustomConfig          []string       `json:"customConfig,omitempty"`
 	Command               []string       `json:"command,omitempty"`
 	ShutdownConfigMap     string         `json:"shutdownConfigMap,omitempty"`
 	Storage               RedisStorage   `json:"storage,omitempty"`
+	Exporter              bool           `json:"exporter,omitempty"`
+	ExporterImage         string         `json:"exporterImage,omitempty"`
+	ExporterVersion       string         `json:"exporterVersion,omitempty"`
+	DisableExporterProbes bool           `json:"disableExporterProbes,omitempty"`
 }
 
 // SentinelSettings defines the specification of the sentinel cluster
 type SentinelSettings struct {
+	Image        string         `json:"image,omitempty"`
 	Replicas     int32          `json:"replicas,omitempty"`
 	Resources    RedisResources `json:"resources,omitempty"`
 	CustomConfig []string       `json:"customConfig,omitempty"`

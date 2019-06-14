@@ -121,10 +121,15 @@ func (r *ReconcileRedis) Reconcile(request reconcile.Request) (reconcile.Result,
 		sync.NewRedisServiceSyncer(redis, r.client, r.scheme),
 		sync.NewSentinelServiceSyncer(redis, r.client, r.scheme),
 		sync.NewRedisConfigMapSyncer(redis, r.client, r.scheme),
-		sync.NewRedisShutdownConfigMapSyncer(redis, r.client, r.scheme),
 		sync.NewSentinelConfigMapSyncer(redis, r.client, r.scheme),
 		sync.NewSentinelDeploymentSyncer(redis, r.client, r.scheme),
 		sync.NewRedisStatefulSetSyncer(redis, r.client, r.scheme),
+	}
+
+	if redis.Spec.Redis.ShutdownConfigMap == "" {
+		syncers = append(syncers, sync.NewRedisShutdownConfigMapSyncer(redis, r.client, r.scheme))
+	} else {
+		reqLogger.Info("Skip ShutdownConfigMap synchronization as user has already specified one")
 	}
 
 	if err = r.sync(syncers); err != nil {

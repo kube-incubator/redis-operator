@@ -35,7 +35,7 @@ $ kubectl apply -f deploy/operator.yaml
 ### Deploy sample redis cluster
 
 ```sh
-$ kubectl apply -f deploy/crds/redis_v1alpha1_redis_cr.yaml
+$ kubectl apply -f deploy/samples/basic.yaml
 ```
 
 ```sh

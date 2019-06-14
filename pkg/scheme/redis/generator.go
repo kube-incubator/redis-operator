@@ -244,6 +244,12 @@ func GenerateRedisStatefulSet(r *redisv1alpha1.Redis, labels map[string]string) 
 	}
 
 	if r.Spec.Redis.Storage.PersistentVolumeClaim != nil {
+		if !r.Spec.Redis.Storage.KeepAfterDeletion {
+			// Set an owner reference so the persistent volumes are deleted when the Redis is
+			r.Spec.Redis.Storage.PersistentVolumeClaim.OwnerReferences = []metav1.OwnerReference{
+				*metav1.NewControllerRef(r, redisv1alpha1.SchemeGroupVersion.WithKind("Redis")),
+			}
+		}
 		ss.Spec.VolumeClaimTemplates = []corev1.PersistentVolumeClaim{
 			*r.Spec.Redis.Storage.PersistentVolumeClaim,
 		}

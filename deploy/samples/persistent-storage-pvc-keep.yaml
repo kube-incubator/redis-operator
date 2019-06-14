@@ -1,0 +1,21 @@
+apiVersion: redis.io/v1alpha1
+kind: Redis
+metadata:
+  name: example-persistent-keep
+spec:
+  sentinel:
+    replicas: 3
+  redis:
+    replicas: 3
+    storage:
+      keepAfterDeletion: true
+      persistentVolumeClaim:
+        metadata:
+          name: example-persistent-keep-data
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+

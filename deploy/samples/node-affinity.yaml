@@ -1,0 +1,27 @@
+apiVersion: redis.io/v1alpha1
+kind: Redis
+metadata:
+  name: example-node-affinity
+spec:
+  redis:
+    replicas: 3
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: kops.k8s.io/instancegroup
+                  operator: In
+                  values:
+                    - productionnodes
+  sentinel:
+    replicas: 3
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: kops.k8s.io/instancegroup
+                  operator: In
+                  values:
+                    - productionnodes

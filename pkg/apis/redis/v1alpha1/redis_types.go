@@ -20,43 +20,42 @@ type RedisSpec struct {
 
 	// Sentinel defines the settings for sentinel cluster
 	Sentinel SentinelSettings `json:"sentinel,omitempty"`
-
-	// HardAntiAffinity defines if the PodAntiAffinity on the Deployment and
-	// Statefulset has to be hard (it's soft by default)
-	HardAntiAffinity bool `json:"hardAntiAffinity,omitempty"`
-
-	// NodeAffinity defines the rules for scheduling the Redis and Sentinel nodes
-	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty"`
-
-	// SecurityContext defines which user and group the Sentinel and Redis containers run as
-	SecurityContext *corev1.PodSecurityContext `json:"securityContext,omitempty"`
-
-	//Tolerations provides a way to schedule Pods on Tainted Nodes
-	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 }
 
 // RedisSettings defines the specification of the redis cluster
 type RedisSettings struct {
-	Image                 string         `json:"image,omitempty"`
-	Replicas              int32          `json:"replicas,omitempty"`
-	Resources             RedisResources `json:"resources,omitempty"`
-	CustomConfig          []string       `json:"customConfig,omitempty"`
-	Command               []string       `json:"command,omitempty"`
-	ShutdownConfigMap     string         `json:"shutdownConfigMap,omitempty"`
-	Storage               RedisStorage   `json:"storage,omitempty"`
-	Exporter              bool           `json:"exporter,omitempty"`
-	ExporterImage         string         `json:"exporterImage,omitempty"`
-	ExporterVersion       string         `json:"exporterVersion,omitempty"`
-	DisableExporterProbes bool           `json:"disableExporterProbes,omitempty"`
+	Image             string                     `json:"image,omitempty"`
+	ImagePullPolicy   corev1.PullPolicy          `json:"imagePullPolicy,omitempty"`
+	Replicas          int32                      `json:"replicas,omitempty"`
+	Resources         RedisResources             `json:"resources,omitempty"`
+	CustomConfig      []string                   `json:"customConfig,omitempty"`
+	Command           []string                   `json:"command,omitempty"`
+	ShutdownConfigMap string                     `json:"shutdownConfigMap,omitempty"`
+	Storage           RedisStorage               `json:"storage,omitempty"`
+	Exporter          RedisExporter              `json:"exporter,omitempty"`
+	Affinity          *corev1.Affinity           `json:"affinity,omitempty"`
+	SecurityContext   *corev1.PodSecurityContext `json:"securityContext,omitempty"`
+	Tolerations       []corev1.Toleration        `json:"tolerations,omitempty"`
 }
 
 // SentinelSettings defines the specification of the sentinel cluster
 type SentinelSettings struct {
-	Image        string         `json:"image,omitempty"`
-	Replicas     int32          `json:"replicas,omitempty"`
-	Resources    RedisResources `json:"resources,omitempty"`
-	CustomConfig []string       `json:"customConfig,omitempty"`
-	Command      []string       `json:"command,omitempty"`
+	Image           string                     `json:"image,omitempty"`
+	ImagePullPolicy corev1.PullPolicy          `json:"imagePullPolicy,omitempty"`
+	Replicas        int32                      `json:"replicas,omitempty"`
+	Resources       RedisResources             `json:"resources,omitempty"`
+	CustomConfig    []string                   `json:"customConfig,omitempty"`
+	Command         []string                   `json:"command,omitempty"`
+	Affinity        *corev1.Affinity           `json:"affinity,omitempty"`
+	SecurityContext *corev1.PodSecurityContext `json:"securityContext,omitempty"`
+	Tolerations     []corev1.Toleration        `json:"tolerations,omitempty"`
+}
+
+// RedisExporter defines the specification for the redis exporter
+type RedisExporter struct {
+	Enabled         bool              `json:"enabled,omitempty"`
+	Image           string            `json:"image,omitempty"`
+	ImagePullPolicy corev1.PullPolicy `json:"imagePullPolicy,omitempty"`
 }
 
 // RedisResources sets the limits and requests for a container

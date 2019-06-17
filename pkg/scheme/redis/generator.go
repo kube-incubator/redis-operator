@@ -180,17 +180,14 @@ func GenerateRedisStatefulSet(r *redisv1alpha1.Redis, labels map[string]string) 
 					Labels: labels,
 				},
 				Spec: corev1.PodSpec{
-					Affinity: &corev1.Affinity{
-						NodeAffinity:    r.Spec.NodeAffinity,
-						PodAntiAffinity: createPodAntiAffinity(r.Spec.HardAntiAffinity, labels),
-					},
-					Tolerations:     r.Spec.Tolerations,
-					SecurityContext: r.Spec.SecurityContext,
+					Affinity:        getAffinity(r.Spec.Redis.Affinity, labels),
+					Tolerations:     r.Spec.Redis.Tolerations,
+					SecurityContext: getSecurityContext(r.Spec.Redis.SecurityContext),
 					Containers: []corev1.Container{
 						{
 							Name:            "redis",
 							Image:           r.Spec.Redis.Image,
-							ImagePullPolicy: "IfNotPresent",
+							ImagePullPolicy: r.Spec.Redis.ImagePullPolicy,
 							Ports: []corev1.ContainerPort{
 								{
 									Name:          "redis",
@@ -254,7 +251,7 @@ func GenerateRedisStatefulSet(r *redisv1alpha1.Redis, labels map[string]string) 
 		}
 	}
 
-	if r.Spec.Redis.Exporter {
+	if r.Spec.Redis.Exporter.Enabled {
 		exporter := createRedisExporterContainer(r)
 		ss.Spec.Template.Spec.Containers = append(ss.Spec.Template.Spec.Containers, exporter)
 	}
@@ -288,17 +285,14 @@ func GenerateSentinelDeployment(r *redisv1alpha1.Redis, labels map[string]string
 					Labels: labels,
 				},
 				Spec: corev1.PodSpec{
-					Affinity: &corev1.Affinity{
-						NodeAffinity:    r.Spec.NodeAffinity,
-						PodAntiAffinity: createPodAntiAffinity(r.Spec.HardAntiAffinity, labels),
-					},
-					Tolerations:     r.Spec.Tolerations,
-					SecurityContext: r.Spec.SecurityContext,
+					Affinity:        getAffinity(r.Spec.Sentinel.Affinity, labels),
+					Tolerations:     r.Spec.Sentinel.Tolerations,
+					SecurityContext: getSecurityContext(r.Spec.Sentinel.SecurityContext),
 					InitContainers: []corev1.Container{
 						{
 							Name:            "sentinel-config-copy",
 							Image:           r.Spec.Sentinel.Image,
-							ImagePullPolicy: "IfNotPresent",
+							ImagePullPolicy: r.Spec.Sentinel.ImagePullPolicy,
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      "sentinel-config",
@@ -330,7 +324,7 @@ func GenerateSentinelDeployment(r *redisv1alpha1.Redis, labels map[string]string
 						{
 							Name:            "sentinel",
 							Image:           r.Spec.Sentinel.Image,
-							ImagePullPolicy: "Always",
+							ImagePullPolicy: r.Spec.Sentinel.ImagePullPolicy,
 							Ports: []corev1.ContainerPort{
 								{
 									Name:          "sentinel",
@@ -448,37 +442,10 @@ func generateResourceList(cpu string, memory string) corev1.ResourceList {
 }
 
 func createRedisExporterContainer(r *redisv1alpha1.Redis) corev1.Container {
-	exporterImage := getRedisExporterImage(r)
-
-	// Define readiness and liveness probes only if config option to disable isn't set
-	var readinessProbe, livenessProbe *corev1.Probe
-	if !r.Spec.Redis.DisableExporterProbes {
-		readinessProbe = &corev1.Probe{
-			InitialDelaySeconds: 10,
-			TimeoutSeconds:      3,
-			Handler: corev1.Handler{
-				HTTPGet: &corev1.HTTPGetAction{
-					Path: "/",
-					Port: intstr.FromString("metrics"),
-				},
-			},
-		}
-
-		livenessProbe = &corev1.Probe{
-			TimeoutSeconds: 3,
-			Handler: corev1.Handler{
-				HTTPGet: &corev1.HTTPGetAction{
-					Path: "/",
-					Port: intstr.FromString("metrics"),
-				},
-			},
-		}
-	}
-
 	return corev1.Container{
 		Name:            constants.ExporterContainerName,
-		Image:           exporterImage,
-		ImagePullPolicy: "Always",
+		Image:           r.Spec.Redis.Exporter.Image,
+		ImagePullPolicy: r.Spec.Redis.Exporter.ImagePullPolicy,
 		Env: []corev1.EnvVar{
 			{
 				Name: "REDIS_ALIAS",
@@ -496,8 +463,6 @@ func createRedisExporterContainer(r *redisv1alpha1.Redis) corev1.Container {
 				Protocol:      corev1.ProtocolTCP,
 			},
 		},
-		ReadinessProbe: readinessProbe,
-		LivenessProbe:  livenessProbe,
 		Resources: corev1.ResourceRequirements{
 			Limits: corev1.ResourceList{
 				corev1.ResourceCPU:    resource.MustParse(constants.ExporterDefaultLimitCPU),
@@ -511,47 +476,12 @@ func createRedisExporterContainer(r *redisv1alpha1.Redis) corev1.Container {
 	}
 }
 
-func createPodAntiAffinity(hard bool, labels map[string]string) *corev1.PodAntiAffinity {
-	if hard {
-		// Return a HARD anti-affinity (no same pods on one node)
-		return &corev1.PodAntiAffinity{
-			RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
-				{
-					TopologyKey: constants.HostnameTopologyKey,
-					LabelSelector: &metav1.LabelSelector{
-						MatchLabels: labels,
-					},
-				},
-			},
-		}
-	}
-
-	// Return a SOFT anti-affinity
-	return &corev1.PodAntiAffinity{
-		PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{
-			{
-				Weight: 100,
-				PodAffinityTerm: corev1.PodAffinityTerm{
-					TopologyKey: constants.HostnameTopologyKey,
-					LabelSelector: &metav1.LabelSelector{
-						MatchLabels: labels,
-					},
-				},
-			},
-		},
-	}
-}
-
 func GetQuorum(r *redisv1alpha1.Redis) int32 {
 	return getQuorum(r)
 }
 
 func getQuorum(r *redisv1alpha1.Redis) int32 {
 	return r.Spec.Sentinel.Replicas/2 + 1
-}
-
-func getRedisExporterImage(r *redisv1alpha1.Redis) string {
-	return fmt.Sprintf("%s:%s", r.Spec.Redis.ExporterImage, r.Spec.Redis.ExporterVersion)
 }
 
 func getRedisVolumeMounts(r *redisv1alpha1.Redis) []corev1.VolumeMount {
@@ -662,5 +592,43 @@ func getSentinelCommand(r *redisv1alpha1.Redis) []string {
 		"redis-server",
 		fmt.Sprintf("/redis/%s", constants.SentinelConfigFileName),
 		"--sentinel",
+	}
+}
+
+func getAffinity(affinity *corev1.Affinity, labels map[string]string) *corev1.Affinity {
+	if affinity != nil {
+		return affinity
+	}
+
+	// Return a SOFT anti-affinity
+	return &corev1.Affinity{
+		PodAntiAffinity: &corev1.PodAntiAffinity{
+			PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{
+				{
+					Weight: 100,
+					PodAffinityTerm: corev1.PodAffinityTerm{
+						TopologyKey: constants.HostnameTopologyKey,
+						LabelSelector: &metav1.LabelSelector{
+							MatchLabels: labels,
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func getSecurityContext(secctx *corev1.PodSecurityContext) *corev1.PodSecurityContext {
+	if secctx != nil {
+		return secctx
+	}
+
+	defaultUserAndGroup := int64(1000)
+	runAsNonRoot := true
+
+	return &corev1.PodSecurityContext{
+		RunAsUser:    &defaultUserAndGroup,
+		RunAsGroup:   &defaultUserAndGroup,
+		RunAsNonRoot: &runAsNonRoot,
 	}
 }

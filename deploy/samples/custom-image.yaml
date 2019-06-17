@@ -6,6 +6,8 @@ spec:
   redis:
     replicas: 3
     image: redis:4.0-alpine
+    imagePullPolicy: "Always"
   sentinel:
     replicas: 3
     image: redis:4.0-alpine
+    imagePullPolicy: "Always"

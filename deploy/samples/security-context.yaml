@@ -1,0 +1,17 @@
+apiVersion: redis.io/v1alpha1
+kind: Redis
+metadata:
+  name: example-security-context
+spec:
+  sentinel:
+    replicas: 3
+    securityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+  redis:
+    replicas: 3
+    securityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000

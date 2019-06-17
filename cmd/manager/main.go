@@ -9,6 +9,7 @@ import (
 
 	"github.com/kube-incubator/redis-operator/pkg/apis"
 	"github.com/kube-incubator/redis-operator/pkg/controller"
+	"github.com/kube-incubator/redis-operator/version"
 
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/leader"
@@ -34,6 +35,7 @@ func printVersion() {
 	log.Info(fmt.Sprintf("Go Version: %s", runtime.Version()))
 	log.Info(fmt.Sprintf("Go OS/Arch: %s/%s", runtime.GOOS, runtime.GOARCH))
 	log.Info(fmt.Sprintf("Version of operator-sdk: %v", sdkVersion.Version))
+	log.Info(fmt.Sprintf("Version of redis-operator: %v", version.Version))
 }
 
 func main() {

@@ -67,6 +67,10 @@ $ kubectl exec -it $(kubectl get pod -l sentinel=example -o jsonpath='{.items[0]
 "world!"
 ```
 
+### Contribution
+
+ If you are interested in contributing to the Redis-Operator project, feel free to send your Pull Request and Issue.
+
 [dep_tool]:https://golang.github.io/dep/docs/installation.html
 [git_tool]:https://git-scm.com/downloads
 [go_tool]:https://golang.org/dl/
